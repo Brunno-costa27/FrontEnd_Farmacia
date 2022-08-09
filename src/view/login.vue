@@ -59,7 +59,6 @@
 
 <script>
 import axios from "axios";
-// import Funcionario from "../services/funcionarios";
 export default {
   beforeCreate() {
     this.form = this.$form.createForm(this, { name: "normal_login" });
@@ -106,10 +105,6 @@ export default {
         this.$router.push({ name: "painel", params: { usuario: this.usuario } });
       }
     },
-    // login() {
-    //   // console.log(Funcionario.user);
-    //   Funcionario.user = this.usuario;
-    // },
   },
 };
 </script>

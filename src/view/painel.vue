@@ -28,7 +28,7 @@
           <a-breadcrumb-item id="name">
             <div id="voltar">
               <template>
-                <a-typography-title :level="2"> Seja bem-vindo {{ usuario }}</a-typography-title>
+                 Seja bem-vindo {{ usuario }}
               </template>
             </div>
           </a-breadcrumb-item>
@@ -103,7 +103,6 @@
           </div>
 
           <div v-if="active1">
-
             <a-table
               :columns="columns"
               :data-source="requisições"
@@ -112,6 +111,7 @@
               id="tabela"
             >
               <template slot="status" slot-scope="text, record">
+
                 <span v-if="record.status === 1">
                   <a-tag v-if="text === 1" color="blue">{{ processing }}</a-tag>
                 </span>
@@ -256,7 +256,7 @@
             "
           >
             <div>
-              <a-form :form="form" @submit="handleSubmit1">
+              <a-form :form="form" @submit="handleSubmit">
                 <a-form-item
                   v-bind="formItemLayout"
                   label="cpf"
@@ -549,61 +549,11 @@ export default {
 
     this.usuario = this.$route.params.usuario;
 
-      // localStorage.setItem('usuario', this.usuario)
        if (sessionStorage.usuario) {
         this.usuario = sessionStorage.usuario;
       }else{
         sessionStorage.setItem('usuario', this.usuario)
       }
-    // axios
-    //   .get(`http://portalwebpaciente.brazilsouth.cloudapp.azure.com:8081/requisicoes?${Date.now()}`)// pegar da rota do azure portalpaciente
-    //   .then((resposta) => {
-    //     this.requisições = resposta.data;
-    //   });
-
-    // axios
-    //   .get(`http://portalfarmacia.brazilsouth.cloudapp.azure.com:3333/historicoDePreco?${Date.now()}`) // pegar da rota do azure portalfarmacia
-    //   .then((resposta) => {
-    //     this.precoLancado = resposta.data;
-    //     console.log(this.precoLancado);
-    //   });
-
-    // axios
-    //   .get(`http://portalfarmacia.brazilsouth.cloudapp.azure.com:3333/auditoria?${Date.now()}`) // pegar da rota do azure portalfarmacia
-    //   .then((resposta) => {
-    //     this.arrayAuxiliar = resposta.data;
-    //     this.arrayAuxiliar.forEach((item) => {
-    //       item.data_changed = item.data_changed
-    //         .slice(0, 10)
-    //         .split("-")
-    //         .reverse()
-    //         .join("/");
-    //     });
-    //     this.auditoria = this.arrayAuxiliar;
-    //     // console.log(this.auditoria);
-    //   });
-
-    // axios
-    //   .get("https://covid19-brazil-api.vercel.app/api/report/v1")
-    //   .then((res) => {
-    //     this.dadosCovid = res.data;
-    //     for (const key in this.dadosCovid) {
-    //       let valor = this.dadosCovid[key];
-    //       for (const key1 in valor) {
-    //         if (valor[key1].uid === 24) {
-    //           this.Estado = valor[key1].state;
-    //           this.casosCovid = valor[key1].cases;
-    //           this.mortes = valor[key1].deaths;
-    //           this.data_horas = valor[key1].datetime;
-    //           this.converter_data = this.data_horas.slice(0, 10);
-    //           this.data_padrao = this.converter_data
-    //             .split("-")
-    //             .reverse()
-    //             .join("/");
-    //         }
-    //       }
-    //     }
-    //   });
   },
 
   watch: {
@@ -629,32 +579,11 @@ export default {
       sessionStorage.clear();
       this.$router.go()
     },
-    // atualiza() {
-    //   // const precoFiltradas = this.requisições.filter(preco => this.precoLancado.filter(id => id.id_cadastro === preco.id_cadastro));
-
-    //   // console.log(precoFiltradas);
-    //   // this.requisições = precoFiltradas;
-    //   const results = this.requisições.filter(
-    //     ({ id_cadastro: id1 }) =>
-    //       !this.precoLancado.some(({ id_cadastro: id2 }) => id2 === id1)
-    //   );
-
-    //   console.log(typeof results);
-    //   this.requisições = results;
-    // },
-
-    // formatCelular(v){
-    // v=v.replace(/D/g,"");             //Remove tudo o que não é dígito
-    // v=v.replace(/^(d{2})(d)/g,"($1) $2"); //Coloca parênteses em volta dos dois primeiros dígitos
-    // v=v.replace(/(d)(d{4})$/,"$1-$2");    //Coloca hífen entre o quarto e o quinto dígitos
-    // return v;
-    // },
 
     handleSubmit(e) {
       e.preventDefault();
       axios
         .post(`http://127.0.0.1:8000/create`, {
-          //cadastrar funcionario na rota do azure do portalfarmacia
           nome: this.nome,
           cpf: this.cpf,
           senha: this.senha,
@@ -672,24 +601,6 @@ export default {
         });
     },
 
-    handleSubmit1(e) {
-      e.preventDefault();
-      // axios
-      //   .delete(`http://portalfarmacia.brazilsouth.cloudapp.azure.com:3333/funcionario/${this.cpf}`, {}) // deletar na rota da azure no portalfarmacia
-      //   .then((res) => {
-      //     this.messageError = res.data.error;
-      //     this.message = res.data.message;
-      //     this.activeError1();
-      //   })
-      //   .catch((e) => {
-      //     console.log(e.response);
-      //   });
-    },
-
-    // user1(usuario) {
-    //   this.users = this.funcionarios.find((user) => user.cpf === usuario);
-    //   // console.log(this.users.nome);
-    // },
     tabelaAparece() {
       this.active = true;
       this.active4 = false;
@@ -720,26 +631,6 @@ export default {
     precoFechar() {
       this.active1 = false;
       this.active_boletim = true;
-      // axios
-      //   .get(`http://portalwebpaciente.brazilsouth.cloudapp.azure.com:8081/requisicoes?${Date.now()}`) // pegar da rota do azure portalpaciente
-      //   .then((resposta) => {
-      //     this.requisições = resposta.data;
-      //   });
-
-      // axios
-      //   .get(`http://portalfarmacia.brazilsouth.cloudapp.azure.com:3333/historicoDePreco?${Date.now()}`) // pegar da rota do azure portalfarmacia
-      //   .then((resposta) => {
-      //     this.precoLancado = resposta.data;
-      //     // console.log(this.precoLancado);
-      //   });
-
-      // const results = this.requisições.filter(
-      //   ({ id_cadastro: id1 }) =>
-      //     !this.precoLancado.some(({ id_cadastro: id2 }) => id2 === id1)
-      // );
-
-      // console.log(typeof results);
-      // this.requisições = results;
     },
     handleChange(value, id, column) {
       const newData = [...this.requisições];
@@ -800,7 +691,7 @@ export default {
           type: target.type,
           price: target.price,
           status: target.status,
-          id_request: id,
+          id_request: target.id_patient,
         })
         .then((res) => {
           this.messageError = res.data.error;
@@ -855,7 +746,6 @@ export default {
             this.usuario = this.$route.params.cpf;
             console.log('Está recebendo um usuario!');
             console.log(this.usuario);
-            // this.user1(this.usuario);
           });
 
         //      axios
@@ -889,7 +779,6 @@ export default {
           this.usuario = this.$route.params.cpf;
            console.log('Está recebendo um usuario!');
             console.log(this.usuario);
-          // this.user1(this.usuario);
         });
       }
       this.messageError = "";
