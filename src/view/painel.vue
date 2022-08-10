@@ -546,6 +546,7 @@ export default {
     } catch (e) {
       console.error(e);
     }
+    this.send_email()
 
     this.usuario = this.$route.params.usuario;
 
@@ -565,9 +566,33 @@ export default {
 
   beforeCreate() {
     this.form = this.$form.createForm(this, { name: "register" });
-    // console.log(this.form);
   },
   methods: {
+
+    send_email(){
+      const newData = [...this.requisições];
+      newData.forEach((requests) => {
+       if (requests.status === 2) {
+        // Rota para enviar o email de cofirmação para o paciente
+      axios
+        .post(`http://127.0.0.1:8000/email`, {
+          email: 'sbrunno.costa@gmail.com',
+          nome: 'Brunno',
+          medicament: requests.medicament,
+          id_request: requests.id,
+        })
+        .then((res) => {
+          this.messageError = res.data.error;
+          this.message = res.data.message;
+          this.activeError();
+        })
+        .catch((e) => {
+          console.log(e.response);
+        });
+        }
+      });
+    },
+
     update_solitacion(val) {
       return (this.chartData.datasets[0].data[0] = val);
     },
@@ -683,6 +708,8 @@ export default {
       //   .catch((e) => {
       //     console.log(e.response);
       //   });
+
+      
 
       // Rota para cadastrar ofertas no banco da farmácia
       axios
