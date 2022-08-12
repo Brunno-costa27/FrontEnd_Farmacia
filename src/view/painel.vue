@@ -17,7 +17,7 @@
             <a @click="() => (modal2Visible = true)">Cadastrar funcionarios</a>
           </a-menu-item>
           <a-menu-item>
-             <a @click="sair">Sair</a>
+            <a @click="sair">Sair</a>
           </a-menu-item>
         </a-sub-menu>
       </a-menu>
@@ -27,9 +27,7 @@
         <a-breadcrumb style="margin: 16px 0">
           <a-breadcrumb-item id="name">
             <div id="voltar">
-              <template>
-                 Seja bem-vindo {{ usuario }}
-              </template>
+              <template> Seja bem-vindo {{ usuario }} </template>
             </div>
           </a-breadcrumb-item>
         </a-breadcrumb>
@@ -40,7 +38,6 @@
           <div id="inform" v-if="active_boletim">
             <div>
               <div style="background: #ececec; padding: 30px">
-
                 <Bar
                   v-if="loaded"
                   :chart-options="chartOptions"
@@ -110,7 +107,10 @@
               bordered
               id="tabela"
             >
+
+
               <template slot="status" slot-scope="text, record">
+                <!-- {{record}} -->
 
                 <span v-if="record.status === 1">
                   <a-tag v-if="text === 1" color="blue">{{ processing }}</a-tag>
@@ -168,7 +168,7 @@
                       type="primary"
                       v-if="record.price"
                       :disabled="editingKey !== ''"
-                      @click="() => edit(record.id)"
+                      @click="() => edit_price(record.id)"
                       >Editar</a-button
                     >
                     <a-button
@@ -176,7 +176,7 @@
                       style="margin-left: 5px"
                       v-if="record.price"
                       :disabled="editingKey !== ''"
-                      @click="() => edit(record.id)"
+                      @click="() => editar_status(record.id)"
                       >Deletar</a-button
                     >
                   </span>
@@ -296,7 +296,6 @@
 </template>
 <script>
 import Funcionario from "../services/funcionarios";
-
 import { Bar } from "vue-chartjs/legacy";
 import {
   Chart as ChartJS,
@@ -316,10 +315,10 @@ ChartJS.register(
   LinearScale
 );
 import axios from "axios";
+import { message } from "ant-design-vue";
 const funcionarios = [];
 const auditoria = [];
 const requisições = [];
-
 const columnsFuncionarios = [
   {
     title: "cpf",
@@ -428,9 +427,11 @@ export default {
       default: () => {},
     },
   },
+
   data() {
     return {
       columns,
+      valor_editar: false,
       processing: "Em andamento",
       confirm: "confirmado",
       cancelado: "cancelado",
@@ -546,40 +547,34 @@ export default {
     } catch (e) {
       console.error(e);
     }
-    this.send_email()
+    // this.send_email()
 
     this.usuario = this.$route.params.usuario;
 
-       if (sessionStorage.usuario) {
-        this.usuario = sessionStorage.usuario;
-      }else{
-        sessionStorage.setItem('usuario', this.usuario)
-      }
+    if (sessionStorage.usuario) {
+      this.usuario = sessionStorage.usuario;
+    } else {
+      sessionStorage.setItem("usuario", this.usuario);
+    }
   },
 
   watch: {
     usuario(newName) {
-     sessionStorage.usuario = newName;
-     this.persist()
-    }
+      sessionStorage.usuario = newName;
+      this.persist();
+    },
   },
 
   beforeCreate() {
     this.form = this.$form.createForm(this, { name: "register" });
   },
   methods: {
-
-    send_email(){
-      const newData = [...this.requisições];
-      newData.forEach((requests) => {
-       if (requests.status === 2) {
-        // Rota para enviar o email de cofirmação para o paciente
+    editar_status(id) {
+      const key = "updatable";
+      let status = 3;
       axios
-        .post(`http://127.0.0.1:8000/email`, {
-          email: 'sbrunno.costa@gmail.com',
-          nome: 'Brunno',
-          medicament: requests.medicament,
-          id_request: requests.id,
+        .patch(`http://127.0.0.1:5000/patients/${id}/requests/status`, {
+          status: status,
         })
         .then((res) => {
           this.messageError = res.data.error;
@@ -589,6 +584,34 @@ export default {
         .catch((e) => {
           console.log(e.response);
         });
+
+      message.loading({ content: "Loading...", key });
+      setTimeout(() => {
+        message.success({ content: "Cancelado!", key, duration: 2 });
+        document.location.reload(true);
+      }, 1000);
+    },
+
+    send_email() {
+      const newData = [...this.requisições];
+      newData.forEach((requests) => {
+        if (requests.status === 2) {
+          // Rota para enviar o email de cofirmação para o paciente
+          axios
+            .post(`http://127.0.0.1:8000/email`, {
+              email: "sbrunno.costa@gmail.com",
+              nome: "Brunno",
+              medicament: requests.medicament,
+              id_request: requests.id,
+            })
+            .then((res) => {
+              this.messageError = res.data.error;
+              this.message = res.data.message;
+              this.activeError();
+            })
+            .catch((e) => {
+              console.log(e.response);
+            });
         }
       });
     },
@@ -596,13 +619,13 @@ export default {
     update_solitacion(val) {
       return (this.chartData.datasets[0].data[0] = val);
     },
-     persist() {
+    persist() {
       sessionStorage.usuario = sessionStorage.getItem("usuario");
     },
 
-    sair(){
+    sair() {
       sessionStorage.clear();
-      this.$router.go()
+      this.$router.go();
     },
 
     handleSubmit(e) {
@@ -678,6 +701,20 @@ export default {
       }
       target.price = "R$ ";
     },
+
+    edit_price(id) {
+      console.log("editar preço");
+      this.valor_editar = true;
+      const newData = [...this.requisições];
+      const target = newData.filter((item) => id === item.id)[0];
+      this.editingKey = id;
+
+      if (target) {
+        target.editable = true;
+        this.requisições = newData;
+      }
+      target.price = "R$ ";
+    },
     save(id) {
       const newData = [...this.requisições];
       // const newCacheData = [...this.cacheData];
@@ -709,8 +746,6 @@ export default {
       //     console.log(e.response);
       //   });
 
-      
-
       // Rota para cadastrar ofertas no banco da farmácia
       axios
         .post(`http://127.0.0.1:8000/offers`, {
@@ -734,6 +769,12 @@ export default {
       // console.log(this.requesicoesAtualizadas);
       this.editingKey = "";
       this.value = 1;
+      if (this.valor_editar) {
+        message.warning("Oferta atualizada com sucesso!");
+      } else {
+        message.success("Oferta lançada com sucesso!");
+      }
+      this.valor_editar = false;
     },
     cancel(id) {
       console.log("cancelar");
@@ -747,6 +788,7 @@ export default {
       }
 
       target.price = "";
+      message.error("Lançamento de oferta cancelada!");
     },
     setModal1Visible(modal1Visible) {
       this.modal1Visible = modal1Visible;
@@ -771,7 +813,7 @@ export default {
           .then((resposta) => {
             this.requisições = resposta.data;
             this.usuario = this.$route.params.cpf;
-            console.log('Está recebendo um usuario!');
+            console.log("Está recebendo um usuario!");
             console.log(this.usuario);
           });
 
@@ -804,8 +846,8 @@ export default {
         Funcionario.listar().then((resposta) => {
           this.funcionarios = resposta.data;
           this.usuario = this.$route.params.cpf;
-           console.log('Está recebendo um usuario!');
-            console.log(this.usuario);
+          console.log("Está recebendo um usuario!");
+          console.log(this.usuario);
         });
       }
       this.messageError = "";
