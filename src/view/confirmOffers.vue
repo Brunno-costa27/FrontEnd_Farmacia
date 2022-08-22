@@ -17,13 +17,9 @@
             <a @click="() => (modal2Visible = true)">Cadastrar funcionarios</a>
           </a-menu-item> -->
           <a-menu-item>
-           <a @click="tabelaAparece">Ofertas confirmadas</a>
+            <router-link to="/confirmOffers">Ofertas confirmadas</router-link>
+            <router-view></router-view>
           </a-menu-item>
-
-          <a-menu-item>
-           <a @click="historicoAparece">Ofertas em andamento</a>
-          </a-menu-item>
-
           <a-menu-item>
             <a @click="sair">Sair</a>
           </a-menu-item>
@@ -67,137 +63,39 @@
           </div>
 
           <div v-if="active">
-            <!-- {{confirmOffers.length}} -->
-              <h1
-              v-if="confirmOffers.length === 0"
+            <a-table
+              :columns="columnsFuncionarios"
+              :data-source="funcionarios"
+              rowKey="key"
+              id="tab"
+            >
+              <a slot="name" slot-scope="text">{{ text }}</a>
+            </a-table>
+            <a-button
+              @click="tabelaFechar"
+              type="danger"
+              style="margin-top: 20px"
+            >
+              <a-icon type="close" />
+            </a-button>
+          </div>
+          <!-- Tabela historico-->
+          <div v-if="active4">
+            <h1
               style="
                 color: rgba(0, 0, 0, 0.65);
                 font-size: 20px;
                 font-weight: bold;
               "
             >
-             Não existe ofertas confirmadas
+              Lista de cargos admitidos
             </h1>
             <a-table
-              v-if="confirmOffers.length !== 0"
-              :columns="columnsOffersConfirm"
-              :data-source="confirmOffers"
+              :columns="columnsAuditoria"
+              :data-source="auditoria"
               rowKey="key"
               id="tab"
             >
-
-               <template slot="status" slot-scope="text, record">
-                {{record.id_request}}
-
-                <span v-if="record.status === 2">
-                  <a-tag v-if="text === 2" color="green">{{ confirm }}</a-tag>
-                </span>
-              </template>
-
-              <a slot="name" slot-scope="text">{{ text }}</a>
-            </a-table>
-             
-            <a-button
-              @click="tabelaFechar"
-              type="danger"
-              style="margin-top: 20px"
-            >
-              <!-- <a-icon type="close" /> -->
-              Voltar
-            </a-button>
-          </div>
-          <!-- Tabela com ofertas em andamento e canceladas-->
-          <div v-if="active4">
-           
-              <h1
-                v-if="offerInProgress.length === 0"
-                style="
-                color: rgba(0, 0, 0, 0.65);
-                font-size: 20px;
-                font-weight: bold;
-              "
-              >
-                Não existe ofertas em andamento ou canceladas
-              </h1>
-            <a-table
-              v-if="offerInProgress.length !== 0"
-              :columns="columnsOffersInProgress"
-              :data-source="offerInProgress"
-              rowKey="key"
-              id="tab"
-            >
-
-            <template slot="status" slot-scope="text, record">
-                {{record.id_request}}
-
-                <span v-if="record.status === 1">
-                  <a-tag v-if="text === 1" color="blue">{{ processing }}</a-tag>
-                </span>
-                <span v-if="record.status === 3">
-                  <a-tag v-if="text === 3" color="red">{{ cancelado }}</a-tag>
-                </span>
-              </template>
-
-               <template
-                v-for="col in ['price']"
-                :slot="col"
-                slot-scope="text, record"
-              >
-                <div :key="col">
-                  <a-input
-                    v-if="record.editable"
-                    style="margin: -5px 0"
-                    :value="text"
-                    @change="
-                      (e) => handleChange_offers(e.target.value, record.id_request, col)
-                    "
-                  />
-                  <template v-else>
-                    {{ text }}
-                  </template>
-                </div>
-              </template>
-              <template slot="operation" slot-scope="text, record">
-                <div class="editable-row-operations">
-                  <span v-if="record.editable">
-                    <a-button @click="() => save_offers(record.id_request)">Salvar</a-button>
-                    <a-popconfirm
-                      title="Certifique-se de cancelar?"
-                      @confirm="() => cancel_offers(record.id_request)"
-                    >
-                      <a-button type="danger" style="margin-left: 5px"
-                        >Cancelar</a-button
-                      >
-                    </a-popconfirm>
-                  </span>
-                  <span v-if="!record.editable" id="buttonEditar">
-                    <a-button
-                      v-if="!record.price"
-                      :disabled="record.status === 3"
-                      @click="() => edit_offers(record.id_request)"
-                      >Lançar Ofertas</a-button
-                    >
-                  </span>
-                  <span v-if="!record.editable" id="buttonEditar">
-                    <a-button
-                      type="primary"
-                      v-if="record.price"
-                      :disabled="record.status === 3"
-                      @click="() => edit_price(record.id_request)"
-                      >Editar</a-button
-                    >
-                    <a-button
-                      type="danger"
-                      style="margin-left: 5px"
-                      v-if="record.price"
-                      :disabled="record.status === 3"
-                      @click="() => editar_status(record.id_request)"
-                      >Deletar</a-button
-                    >
-                  </span>
-                </div>
-              </template>
-
               <a slot="name" slot-scope="text">{{ text }}</a>
             </a-table>
             <a-button
@@ -205,34 +103,20 @@
               type="danger"
               style="margin-top: 20px"
             >
-              <!-- <a-icon type="close" /> -->
-              Voltar
+              <a-icon type="close" />
             </a-button>
           </div>
 
           <div v-if="active1">
-
-             <h1
-              v-if="requisições.length === 0"
-              style="
-                color: rgba(0, 0, 0, 0.65);
-                font-size: 20px;
-                font-weight: bold;
-              "
-            >
-             Não existe nenhuma solicitação no momento.
-            </h1>
-
             <a-table
-              v-if="requisições.length !== 0"
               :columns="columns"
               :data-source="requisições"
-              rowKey="key"
+              rowKey="id"
               bordered
               id="tabela"
             >
               <template slot="status" slot-scope="text, record">
-                {{record.id}}
+                <!-- {{record.id}} -->
 
                 <span v-if="record.status === 1">
                   <a-tag v-if="text === 1" color="blue">{{ processing }}</a-tag>
@@ -310,8 +194,7 @@
               type="danger"
               style="margin-top: 20px max-width: 100%;"
             >
-              <!-- <a-icon type="close" /> -->
-              Voltar
+              <a-icon type="close" />
             </a-button>
           </div>
 
@@ -419,6 +302,7 @@
 </template>
 <script>
 import Funcionario from "../services/funcionarios";
+// import { UserOutlined } from '@ant-design/icons';
 import { Bar } from "vue-chartjs/legacy";
 import {
   Chart as ChartJS,
@@ -439,93 +323,38 @@ ChartJS.register(
 );
 import axios from "axios";
 import { message } from "ant-design-vue";
-const confirmOffers = [];
-const offerInProgress = [];
+const funcionarios = [];
+const auditoria = [];
 const requisições = [];
-const columnsOffersConfirm = [
+const columnsFuncionarios = [
   {
-    title: "Medicamento",
-    dataIndex: "medicament",
-    width: "17%",
-    align: "center",
-    scopedSlots: { customRender: "medicament" },
-  },
-  {
-    title: "Quantidade",
-    dataIndex: "quant",
-    width: "10%",
-    align: "center",
-    scopedSlots: { customRender: "quant" },
-  },
-  {
-    title: "Status",
-    dataIndex: "status",
-    width: "3%",
-    align: "center",
-    scopedSlots: { customRender: "status" },
-  },
-  {
-    title: "Valor",
-    dataIndex: "price",
-    width: "8%",
-    align: "center",
-    scopedSlots: { customRender: "price" },
-  },
-  {
-    title: "Tipo",
-    dataIndex: "type",
-    width: "10%",
-    align: "center",
-    scopedSlots: { customRender: "type" },
-  },
-];
-
-const columnsOffersInProgress = [
-   {
-    title: "Medicamento",
-    dataIndex: "medicament",
-    width: "17%",
-    align: "center",
-    scopedSlots: { customRender: "medicament" },
-  },
-  {
-    title: "Quantidade",
-    dataIndex: "quant",
-    width: "10%",
-    align: "center",
-    scopedSlots: { customRender: "quant" },
-  },
-  {
-    title: "Status",
-    dataIndex: "status",
-    width: "3%",
-    align: "center",
-    scopedSlots: { customRender: "status" },
-  },
-  {
-    title: "Valor",
-    dataIndex: "price",
-    width: "8%",
-    align: "center",
-    scopedSlots: { customRender: "price" },
-  },
-  {
-    title: "Tipo",
-    dataIndex: "type",
-    width: "10%",
-    align: "center",
-    scopedSlots: { customRender: "type" },
-  },
-  {
-    title: "Operação",
-    dataIndex: "operation",
+    title: "cpf",
+    dataIndex: "cpf",
+    key: "cpf",
     width: "15%",
-    align: "center",
-    scopedSlots: { customRender: "operation" },
   },
-  
+  {
+    title: "nome",
+    dataIndex: "nome",
+    key: "nome",
+    width: "50%",
+  },
 ];
 
+const columnsAuditoria = [
+  {
+    title: "cargo",
+    dataIndex: "valor_novo",
+    key: "valor_novo",
+    width: "15%",
+  },
+  {
+    title: "data",
+    dataIndex: "data_changed",
+    key: "data_changed",
+    width: "10%",
+  },
+];
 
 const columns = [
   {
@@ -614,7 +443,7 @@ export default {
       processing: "Em andamento",
       confirm: "confirmado",
       cancelado: "cancelado",
-      columnsOffersInProgress,
+      columnsAuditoria,
       data: [],
       editingKey: "",
       collapsed: true,
@@ -626,9 +455,10 @@ export default {
       active4: false,
       active_boletim: true,
       requisições,
-      columnsOffersConfirm,
-      confirmOffers,
-      offerInProgress,
+      columnsFuncionarios,
+      // columnsCadastroPreco,
+      funcionarios,
+      auditoria,
       usuario: "",
       modal2Visible: false,
       modal2Visible1: false,
@@ -702,29 +532,19 @@ export default {
   async mounted() {
     this.loaded = false;
     try {
-
-      let response = await axios.get(`http://127.0.0.1:5000/patients/requests`); // Lista com as requisições do banco do portal paciente
-      // let response_offers = await axios.get(`http://127.0.0.1:8000/offers_all`); // Lista de ofertas do banco da farmácia
-      let response_offers_patient = await axios.get(`http://127.0.0.1:5000/requests/offers`); // Lista de ofertas do banco paciente
+      let response = await axios.get(`http://127.0.0.1:5000/patients/requests`);
+      let response_offers = await axios.get(`http://127.0.0.1:8000/offers_all`);
       let in_progress = 0;
       let confirmed = 0;
       let canceled = 0;
-
       const results = response.data.filter(
         ({ id: id1 }) =>
-          !response_offers_patient.data.some(({ id_request: id2 }) => id2 === id1)
+          !response_offers.data.some(({ id_request: id2 }) => id2 === id1)
       );
-
-      
-
       this.requisições = results;
-      this.confirmOffers = response_offers_patient.data.filter((item) => item.status === 2);
-      this.offerInProgress = response_offers_patient.data.filter((item) => item.status === 1 || item.status === 3)
-      
-
       this.update_solitacion(response.data.length);
       this.chartData.datasets[0].data[0] = response.data.length;
-      response.data.forEach((requests) => {
+      this.requisições.forEach((requests) => {
         if (requests.status === 1) {
           in_progress = in_progress + 1;
         } else if (requests.status === 2) {
@@ -733,16 +553,14 @@ export default {
           canceled = canceled + 1;
         }
       });
-      in_progress = this.offerInProgress.filter((item) => item.status === 1)
-      canceled = this.offerInProgress.filter((item) => item.status === 3)
-      this.chartData.datasets[0].data[1] = in_progress.length;
-      this.chartData.datasets[0].data[2] = this.confirmOffers.length;
-      this.chartData.datasets[0].data[3] = canceled.length;
+      this.chartData.datasets[0].data[1] = in_progress;
+      this.chartData.datasets[0].data[2] = confirmed;
+      this.chartData.datasets[0].data[3] = canceled;
       this.loaded = true;
     } catch (e) {
       console.error(e);
     }
-      await this.send_email();
+    await this.send_email();
 
     this.usuario = this.$route.params.usuario;
 
@@ -765,11 +583,10 @@ export default {
   },
   methods: {
     editar_status(id) {
-      console.log(id);
       const key = "updatable";
       let status = 3;
       axios
-        .patch(`http://127.0.0.1:5000/patients/offers/${id}/status`, {
+        .patch(`http://127.0.0.1:5000/patients/${id}/requests/status`, {
           status: status,
         })
         .then((res) => {
@@ -789,19 +606,10 @@ export default {
     },
 
     async send_email() {
-      
       try {
-        let response = await axios.get(`http://127.0.0.1:5000/patients/requests`);
-        let response_offers_patient = await axios.get(`http://127.0.0.1:5000/requests/offers`);
-
-        const results = response.data.filter(
-        ({ id: id1 }) =>
-          response_offers_patient.data.some(({ id_request: id2 }) => id2 === id1)
-      );
-        let email_status = results.filter((item) => item.status === 2)
-        console.log(email_status);
-        email_status.forEach((requests) => {
-          
+        const newData = [...this.requisições];
+        newData.forEach((requests) => {
+          // console.log(requests);
           if (requests.status === 2) {
             //Rota para enviar o email de cofirmação para o paciente
             axios
@@ -824,7 +632,6 @@ export default {
       } catch (e) {
         console.error(e);
       }
-      
     },
 
     update_solitacion(val) {
@@ -892,32 +699,16 @@ export default {
       this.active_boletim = true;
     },
     handleChange(value, id, column) {
-      console.log(value);
-      console.log(id);
-      console.log(column);
       const newData = [...this.requisições];
       const target = newData.filter((item) => id === item.id)[0];
       if (target) {
         target[column] = value;
         this.requisições = newData;
-      }
-    },
-
-     handleChange_offers(value, id, column) {
-      console.log(value);
-      console.log(id);
-      console.log(column);
-      const newData = [...this.offerInProgress];
-      const target = newData.filter((item) => id === item.id_request)[0];
-      if (target) {
-        target[column] = value;
-        this.offerInProgress = newData;
       }
     },
 
     edit(id) {
       console.log("editar");
-      console.log(id);
       const newData = [...this.requisições];
       const target = newData.filter((item) => id === item.id)[0];
       this.editingKey = id;
@@ -925,78 +716,44 @@ export default {
       if (target) {
         target.editable = true;
         this.requisições = newData;
-      }
-      target.price = "R$ ";
-    },
-
-    edit_offers(id) {
-      console.log("editar");
-      console.log(id);
-      const newData = [...this.offerInProgress];
-      const target = newData.filter((item) => id === item.id_request)[0];
-      this.editingKey = id;
-
-      if (target) {
-        target.editable = true;
-        this.offerInProgress = newData;
       }
       target.price = "R$ ";
     },
 
     edit_price(id) {
       console.log("editar preço");
-      console.log(id);
       this.valor_editar = true;
-      const newData = [...this.offerInProgress];
-      const target = newData.filter((item) => id === item.id_request)[0];
+      const newData = [...this.requisições];
+      const target = newData.filter((item) => id === item.id)[0];
       this.editingKey = id;
 
       if (target) {
         target.editable = true;
-        this.offerInProgress = newData;
+        this.requisições = newData;
       }
       target.price = "R$ ";
     },
-
-    save_offers(id) {
-      console.log('salvar');
-      console.log(id);
-      const key = "updatable";
-      const newData = [...this.offerInProgress];
+    save(id) {
+      const newData = [...this.requisições];
       // const newCacheData = [...this.cacheData];
-      const target = newData.filter((item) => id === item.id_request)[0];
+      const target = newData.filter((item) => id === item.id)[0];
       // console.log(target, "target");
       // const targetCache = newCacheData.filter(item => key === item.key)[0];
       // console.log(targetCache, 'targetCache');
       if (target) {
         delete target.editable;
-        this.offerInProgress = newData;
+        this.requisições = newData;
         Object.assign(target);
       }
 
       // Rota para enviar a solicitação de preço para o paciente
-      axios
-        .patch(`http://127.0.0.1:5000/patients/offers/${id}/price`, {
-          price: target.price,
-        })
-        .then((res) => {
-          this.messageError = res.data.error;
-          this.message = res.data.message;
-          this.activeError();
-        })
-        .catch((e) => {
-          console.log(e.response);
-        });
-
-      // Rota para cadastrar ofertas no banco da farmácia
       // axios
-      //   .post(`http://127.0.0.1:8000/offers`, {
+      //   .post(`http://127.0.0.1:5000/requests/${id}/offers`, {
       //     medicament: target.medicament,
-      //     quant: target.quant,
       //     type: target.type,
       //     price: target.price,
       //     status: target.status,
-      //     id_request: target.id,
+      //     id_request: id,
       //   })
       //   .then((res) => {
       //     this.messageError = res.data.error;
@@ -1007,57 +764,10 @@ export default {
       //     console.log(e.response);
       //   });
 
-      // this.requisições = this.requisições.filter((item) => item.id != id);
-      // this.requesicoesAtualizadas = this.requisições;
-      // console.log(this.requesicoesAtualizadas);
-      this.editingKey = "";
-      this.value = 1;
-      if (this.valor_editar) {
-        message.warning("Oferta atualizada com sucesso!");
-        //  message.loading({ content: "Loading..."}, key);
-      setTimeout(() => {
-        message.warning({ content: "Oferta atualizada com sucesso!", key, duration: 2 });
-        document.location.reload(true);
-      }, 1000);
-      } else {
-        message.success("Oferta lançada com sucesso!");
-        // message.loading({ content: "Loading...", key});
-      setTimeout(() => {
-        message.success({ content: "Oferta lançada com sucesso!", key, duration: 2 });
-        document.location.reload(true);
-      }, 1000);
-      }
-      this.valor_editar = false;
-
-
-      // message.loading({ content: "Loading...", id});
-      // setTimeout(() => {
-      //   message.success({ content: "Cancelado!", id, duration: 2 });
-      //   document.location.reload(true);
-      // }, 1000);
-    },
-
-    save(id) {
-      console.log('salvar');
-      console.log(id);
-      const key = "updatable";
-      const newData = [...this.requisições];
-      // const newCacheData = [...this.cacheData];
-      const target = newData.filter((item) => id === item.id)[0];
-      // console.log(target, "target");
-      // const targetCache = newCacheData.filter(item => key === item.key)[0];
-      // console.log(targetCache, 'targetCache');
-      if (target) {
-        delete target.editable;
-        this.requisições = newData;
-        Object.assign(target);
-      }
-
-      // Rota para enviar a solicitação de preço para o paciente
+      // Rota para cadastrar ofertas no banco da farmácia
       axios
-        .post(`http://127.0.0.1:5000/requests/${id}/offers`, {
+        .post(`http://127.0.0.1:8000/offers`, {
           medicament: target.medicament,
-          quant: target.quant,
           type: target.type,
           price: target.price,
           status: target.status,
@@ -1072,25 +782,6 @@ export default {
           console.log(e.response);
         });
 
-      // Rota para cadastrar ofertas no banco da farmácia
-      // axios
-      //   .post(`http://127.0.0.1:8000/offers`, {
-      //     medicament: target.medicament,
-      //     quant: target.quant,
-      //     type: target.type,
-      //     price: target.price,
-      //     status: target.status,
-      //     id_request: target.id,
-      //   })
-      //   .then((res) => {
-      //     this.messageError = res.data.error;
-      //     this.message = res.data.message;
-      //     this.activeError();
-      //   })
-      //   .catch((e) => {
-      //     console.log(e.response);
-      //   });
-
       // this.requisições = this.requisições.filter((item) => item.id != id);
       // this.requesicoesAtualizadas = this.requisições;
       // console.log(this.requesicoesAtualizadas);
@@ -1100,33 +791,11 @@ export default {
         message.warning("Oferta atualizada com sucesso!");
       } else {
         message.success("Oferta lançada com sucesso!");
-         setTimeout(() => {
-        message.success({ content: "Oferta lançada com sucesso!", key, duration: 2 });
-        document.location.reload(true);
-      }, 500);
       }
       this.valor_editar = false;
     },
-
-     cancel_offers(id) {
-      console.log("cancelar");
-      console.log(id);
-      const newData = [...this.offerInProgress];
-      const target = newData.filter((item) => id === item.id_request)[0];
-      this.editingKey = "";
-      if (target) {
-        Object.assign(target);
-        delete target.editable;
-        this.offerInProgress = newData;
-      }
-
-      target.price = "";
-      message.error("Lançamento de oferta cancelada!");
-    },
-
     cancel(id) {
       console.log("cancelar");
-      console.log(id);
       const newData = [...this.requisições];
       const target = newData.filter((item) => id === item.id)[0];
       this.editingKey = "";
@@ -1167,7 +836,7 @@ export default {
           });
 
         //      axios
-        // .get(`http://portalfarmacia.brazilsouth.cloudapp.azure.com:3333/offerInProgress?${Date.now()}`) // pegar da rota do azure portalfarmacia
+        // .get(`http://portalfarmacia.brazilsouth.cloudapp.azure.com:3333/auditoria?${Date.now()}`) // pegar da rota do azure portalfarmacia
         // .then((resposta) => {
         //   this.arrayAuxiliar = resposta.data;
         //   this.arrayAuxiliar.forEach((item) => {
@@ -1177,8 +846,8 @@ export default {
         //       .reverse()
         //       .join("/");
         //   });
-        //   this.offerInProgress = this.arrayAuxiliar;
-        //   // console.log(this.offerInProgress);
+        //   this.auditoria = this.arrayAuxiliar;
+        //   // console.log(this.auditoria);
         // });
       }
       this.messageError = "";
