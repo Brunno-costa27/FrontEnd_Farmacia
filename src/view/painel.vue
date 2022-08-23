@@ -13,9 +13,9 @@
           <a-menu-item>
             <a @click="precoAparece">Cadastrar Ofertas</a>
           </a-menu-item>
-          <!-- <a-menu-item>
-            <a @click="() => (modal2Visible = true)">Cadastrar funcionarios</a>
-          </a-menu-item> -->
+          <a-menu-item>
+            <a @click="tabelaAuditoria">Auditoria status</a>
+          </a-menu-item>
           <a-menu-item>
            <a @click="tabelaAparece">Ofertas confirmadas</a>
           </a-menu-item>
@@ -64,6 +64,49 @@
                 />
               </div>
             </div>
+          </div>
+
+
+
+          <div v-if="auditoria_active">
+            <!-- {{confirmOffers.length}} -->
+              <h1
+              v-if="auditoria.length === 0"
+              style="
+                color: rgba(0, 0, 0, 0.65);
+                font-size: 20px;
+                font-weight: bold;
+              "
+            >
+             Não existe mudanças 
+            </h1>
+            <a-table
+              v-if="auditoria.length !== 0"
+              :columns="columnsAuditoria"
+              :data-source="auditoria"
+              rowKey="key"
+              id="tab"
+            >
+
+               <template slot="status" slot-scope="text, record">
+                {{record.id_request}}
+
+                <span v-if="record.status === 2">
+                  <a-tag v-if="text === 2" color="green">{{ confirm }}</a-tag>
+                </span>
+              </template>
+
+              <a slot="name" slot-scope="text">{{ text }}</a>
+            </a-table>
+             
+            <a-button
+              @click="tabelaFechar"
+              type="danger"
+              style="margin-top: 20px"
+            >
+              <!-- <a-icon type="close" /> -->
+              Voltar
+            </a-button>
           </div>
 
           <div v-if="active">
@@ -440,6 +483,7 @@ ChartJS.register(
 import axios from "axios";
 import { message } from "ant-design-vue";
 const confirmOffers = [];
+const auditoria = [];
 const offerInProgress = [];
 const requisições = [];
 const columnsOffersConfirm = [
@@ -572,6 +616,37 @@ const columns = [
   },
 ];
 
+const columnsAuditoria = [
+  {
+    title: "Data",
+    dataIndex: "data_changed",
+    width: "17%",
+    align: "center",
+    scopedSlots: { customRender: "data_changed" },
+  },
+  {
+    title: "Operação",
+    dataIndex: "operacao",
+    width: "10%",
+    align: "center",
+    scopedSlots: { customRender: "operacao" },
+  },
+  {
+    title: "Valor antigo",
+    dataIndex: "valor_antigo",
+    width: "3%",
+    align: "center",
+    scopedSlots: { customRender: "valor_antigo" },
+  },
+  {
+    title: "Valor novo",
+    dataIndex: "valor_novo",
+    width: "8%",
+    align: "center",
+    scopedSlots: { customRender: "valor_novo" },
+  },
+];
+
 export default {
   
   name: "BarChart",
@@ -621,12 +696,15 @@ export default {
       loaded: false,
       active: false,
       active1: false,
+      auditoria_active: false,
       active2: false,
       active3: false,
       active4: false,
       active_boletim: true,
       requisições,
       columnsOffersConfirm,
+      columnsAuditoria,
+      auditoria,
       confirmOffers,
       offerInProgress,
       usuario: "",
@@ -721,6 +799,8 @@ export default {
       this.confirmOffers = response_offers_patient.data.filter((item) => item.status === 2);
       this.offerInProgress = response_offers_patient.data.filter((item) => item.status === 1 || item.status === 3)
       
+      let response_auditoria = await axios.get(`http://127.0.0.1:5000/requests/auditoria`);
+      this.auditoria  = response_auditoria.data;
 
       this.update_solitacion(response.data.length);
       this.chartData.datasets[0].data[0] = response.data.length;
@@ -865,9 +945,19 @@ export default {
       this.active4 = false;
       this.active1 = false;
       this.active_boletim = false;
+      this.auditoria_active = false;
+    },
+
+    tabelaAuditoria() {
+      this.auditoria_active = true;
+      this.active = false;
+      this.active4 = false;
+      this.active1 = false;
+      this.active_boletim = false;
     },
     tabelaFechar() {
       this.active = false;
+      this.auditoria_active = false;
       this.active_boletim = true;
     },
     precoAparece() {
@@ -875,20 +965,24 @@ export default {
       this.active4 = false;
       this.active = false;
       this.active_boletim = false;
+      this.auditoria_active = false;
     },
     historicoAparece() {
       this.active4 = true;
       this.active = false;
       this.active1 = false;
       this.active_boletim = false;
+      this.auditoria_active = false;
     },
     historicoFechar() {
       this.active4 = false;
       this.active = false;
+      this.auditoria_active = false;
       this.active_boletim = true;
     },
     precoFechar() {
       this.active1 = false;
+      this.auditoria_active = false;
       this.active_boletim = true;
     },
     handleChange(value, id, column) {
