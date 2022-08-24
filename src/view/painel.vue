@@ -89,7 +89,7 @@
             >
 
                <template slot="status" slot-scope="text, record">
-                {{record.id_request}}
+                <!-- {{record.id_request}} -->
 
                 <span v-if="record.status === 2">
                   <a-tag v-if="text === 2" color="green">{{ confirm }}</a-tag>
@@ -130,7 +130,7 @@
             >
 
                <template slot="status" slot-scope="text, record">
-                {{record.id_request}}
+                <!-- {{record.id_request}} -->
 
                 <span v-if="record.status === 2">
                   <a-tag v-if="text === 2" color="green">{{ confirm }}</a-tag>
@@ -171,7 +171,7 @@
             >
 
             <template slot="status" slot-scope="text, record">
-                {{record.id_request}}
+                <!-- {{record.id_request}} -->
 
                 <span v-if="record.status === 1">
                   <a-tag v-if="text === 1" color="blue">{{ processing }}</a-tag>
@@ -275,7 +275,7 @@
               id="tabela"
             >
               <template slot="status" slot-scope="text, record">
-                {{record.id}}
+                <!-- {{record.id}} -->
 
                 <span v-if="record.status === 1">
                   <a-tag v-if="text === 1" color="blue">{{ processing }}</a-tag>
